@@ -1,85 +1,92 @@
-import React, {Component} from 'react';
+import React, { Component } from "react";
 
-import TodoItem from './TodoItem';
-
+import TodoItem from "./TodoItem";
 
 class TodoList extends Component {
   constructor(props) {
-    super(props)
+    super(props);
     this.state = {
-      list : [],
-    }
-      
+      list: ["Lomber", "Jack", "Freek"],
+      todoStr: "",
+      invalid: true
+    };
+
     this.addItem = this.addItem.bind(this);
     this.deleteItem = this.deleteItem.bind(this);
-
   }
 
-  deleteItem(event) {
-    const item = event.target.parentElement;
-    let text = item.querySelector("h4").innerHTML.toString();
-    console.log(text.toString())
-    item.outerHTML = "";
-    // for (let index = 0; index < this.state.list.length; index++) {
-    //   if (this.state.list[index] === text) {
-    //     console.log(index);
-    //     this.setState({
-    //       list: this.state.list.splice(index, 1)
-    //     }) 
-    //   }
-    // }
-    console.log(this.state.list)
+  deleteItem(position) {
+    let { list } = this.state;
+
+    if (position === 0) {
+      list.shift();
+      return this.setState({ ...this.state, list });
+    } else if (position === list.length - 1) {
+      list.pop();
+      return this.setState({ ...this.state, list });
+    } else {
+      const _list = list.slice(0, position).concat(list.slice(position + 1));
+      this.setState({ ...this.state, list: _list });
+    }
   }
 
   addItem(event) {
-  
-    let newItem = document.querySelector("[name=item]");
-    if (newItem.value === "") {
-      newItem.classList.add("invalid");
-      newItem.focus();
-    } else {
-      console.log(this.state.list);
-      newItem.classList.remove("invalid");
+    const { todoStr } = this.state;
+    if (todoStr.trim().length > 0) {
       this.setState({
-        list : this.state.list.concat(newItem.value)
-      })
-      // let list = this.state.list;
-      console.log(this.state.list);
-      newItem.value = ""
+        todoStr: "",
+        invalid: false,
+        list: [...this.state.list, todoStr]
+      });
+    } else {
+      this.setState({
+        ...this.state,
+        invalid: true
+      });
     }
   }
 
   render() {
-    let list = this.state.list;
-    console.log(list)
+    const { list } = this.state;
+    console.log(list);
 
     return (
-  
       <div className="bg-light py-5 px-5 h-80 w-60 list">
-        <h1 className="mb-3 text-center">
-          My List
-        </h1>
-  
+        <h1 className="mb-3 text-center">My List</h1>
+
         <div className="col-12 mx-auto d-flex mb-4">
-          <input type="text" name="item" className="form-control col-9 mr-2" />
+          <input
+            type="text"
+            name="item"
+            className={`${
+              this.state.invalid ? "invalid" : ""
+            } form-control col-9 mr-2`}
+            value={this.state.todoStr}
+            onChange={evt => {
+              this.setState({
+                ...this.state,
+                todoStr: evt.target.value
+              });
+            }}
+          />
           <button className="btn btn-primary" onClick={this.addItem}>
             Add Item
           </button>
-  
         </div>
-  
-        {list.length === 0 ? <NoItem /> : ''}
 
-        {list.map((item, index)=> {
-          return (<TodoItem 
-            key={index}
-            task={item}
-            deleteItem = {this.deleteItem}
-          />)
-  
+        {list.length === 0 && <NoItem />}
+
+        {list.map((item, index) => {
+          return (
+            <TodoItem
+              key={index}
+              position={index}
+              task={item}
+              deleteItem={this.deleteItem}
+            />
+          );
         })}
-        
-  
+
         <style>
           {`
   
@@ -104,8 +111,7 @@ class TodoList extends Component {
           `}
         </style>
       </div>
-  
-    )
+    );
   }
 }
 
@@ -113,13 +119,11 @@ function NoItem(props) {
   return (
     <div className="text-center">
       <h6>
-        Your List is empty... <br /> 
+        Your List is empty... <br />
         Add items to keep track of them.
       </h6>
     </div>
-  )
+  );
 }
-
-
 
 export default TodoList;
